@@ -1,0 +1,32 @@
+# Data — tải qua Google Drive, xem link trong README.md
+images.zip
+images/
+*.xlsx
+# test_images/ ĐƯỢC theo dõi: 59 ảnh scan, 1,2 MB, là tập đánh giá thật duy nhất của đồ án và là
+# nguồn của mọi con số chính. Không có nó thì clone repo về không tái lập được kết quả nào.
+# Bản .zip gốc thì vẫn bỏ qua (xem cuối file).
+output/*
+# Nhãn Phần 2 do người gán tay — KHÔNG sinh lại được bằng cách chạy lại code,
+# nên phải theo dõi. Mọi thứ còn lại trong output/ (cache .npz, ảnh render,
+# contact sheet) đều tái tạo được và vẫn bị bỏ qua.
+!output/label_sheets/
+output/label_sheets/*
+!output/label_sheets/label_template.csv
+materials/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+test_images-*.zip
+fonts/
+
+# Gói nộp: dựng lại được bằng `python package_submission.py`, và bản --with-model nặng 166 MB.
+submission/
+submission.zip

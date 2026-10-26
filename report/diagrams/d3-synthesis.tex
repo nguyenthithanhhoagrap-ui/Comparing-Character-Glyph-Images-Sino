@@ -1,0 +1,45 @@
+% Sơ đồ 3 — Sinh cặp dương: render đa font (render_fonts.py) rồi làm xuống cấp cho giống scan
+% (scan_augment.degrade), với vòng hiệu chỉnh tham số bằng số đo trên 59 scan thật.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 8mm]
+
+% --- Hàng 1: render ---
+\node[dark=22mm] (cp) {Mã Unicode\\(26.044 chữ)};
+\node[box=34mm, right=of cp] (fonts) {7 font\\minh triều $\cdot$ tống $\cdot$ \textbf{khải}\\hắc $\cdot$ phỏng tống};
+\node[decision, right=of fonts] (cmap) {có trong\\\code{cmap}?};
+\node[box=28mm, right=of cmap] (render) {Ảnh render\\\textbf{131.604} ảnh\\$\approx$\,5,05 font/chữ};
+\draw[arr] (cp) -- (fonts);
+\draw[arr] (fonts) -- (cmap);
+\draw[arr] (cmap) -- node[lab, above] {có} (render);
+\node[lab, above=4mm of cmap, text width=34mm] (skip) {không $\rightarrow$ bỏ qua\\(tránh ô \emph{tofu} giống hệt nhau)};
+\draw[arrdash] (cmap) -- (skip);
+
+% --- Hàng 2: degrade() theo thứ tự vật lý ---
+\coordinate (d0) at ($(cp.south west)+(0,-30mm)$);
+\foreach \t [count=\i] in {Biến dạng\\đàn hồi, Dày nét, Thu nhỏ\\rồi phóng, Làm mờ\\Gauss, Giấy ngả màu\\giảm tương phản, Nhiễu\\cảm biến, Kéo giãn\\không vuông} {
+  \node[box=19mm, minimum height=12mm, anchor=north west, font=\footnotesize] (s\i) at ($(d0)+({(\i-1)*23mm},0)$) {\t};
+}
+\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,...,6} \draw[arr] (s\i) -- (s\j);
+\node[grouplabel, anchor=south west] at ($(s2.north west)+(0,1mm)$) {\code{scan\_augment.degrade()} --- đúng thứ tự một trang scan tích luỹ};
+\draw[arr] (render.south) -- ++(0,-8mm) -| (s1.north);
+
+\node[good=30mm, right=8mm of s7] (view) {View huấn luyện\\(online, mỗi epoch\\một biến thể)};
+\draw[arr] (s7) -- (view);
+
+% --- Hàng 3: hiệu chỉnh ---
+\node[store=24mm, below=14mm of s1] (scans) {59 scan thật\\\code{test\_images/}};
+\node[box=50mm, right=of scans] (stats) {6 thống kê ảnh\\độ nét $\cdot$ tương phản $\cdot$ độ dày nét\\tỉ lệ mực $\cdot$ nhiễu $\cdot$ nền};
+\node[box=34mm, right=of stats] (cmp) {So với ảnh đã degrade\\\code{--calibrate}};
+\node[hot=30mm, right=of cmp] (err) {sai số log\\0,880 $\rightarrow$ 0,103\\(tốt hơn 8,5$\times$)};
+\draw[arr] (scans) -- (stats);
+\draw[arr] (stats) -- (cmp);
+\draw[arr] (cmp) -- (err);
+\draw[arrdash] (cmp.north) -- node[lab, right] {chỉnh tham số theo số đo, không theo mắt} (cmp.north |- s1.south);
+
+% --- Kết quả đo độ khó ---
+\node[lab, text width=58mm, align=right, anchor=north east] at ($(err.south east)+(0,-3mm)$) {độ khó so với scan thật:\\render sạch dễ hơn \textbf{9,4$\times$} $\rightarrow$ sau degrade còn \textbf{2,8$\times$}};
+
+\end{tikzpicture}
+\end{document}

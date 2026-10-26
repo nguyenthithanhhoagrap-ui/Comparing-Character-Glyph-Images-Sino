@@ -1,0 +1,68 @@
+% Slide 3, card phải — PHẦN 2: xếp hạng trong nhóm cùng âm. Cùng khung với s3-card-phan1.tex.
+% Ví dụ thật: cofn.jpg = "còn"; nhóm "còn" trong QuocNgu_SinoNom_Dic có đúng 5 chữ
+% (哙 噲 存 羣 群), nhãn gán tay là 群 U+7FA4 (label_template.csv, confidence high).
+\documentclass[tikz,border=4pt]{standalone}
+\input{tikzstyle}
+\definecolor{p2blue}{HTML}{1D4ED8}
+\definecolor{p2tint}{HTML}{EFF6FF}
+% Chữ in trong kho: dùng ảnh thật images/7FA4.jpg nếu có, không thì sắp chữ bằng font.
+% \inchu{mã Unicode}{chiều cao ảnh}{chữ}
+\newcommand{\inchu}[3]{\IfFileExists{../../images/#1.jpg}
+  {\includegraphics[height=#2]{../../images/#1.jpg}}
+  {{\color{ink}\nomfont\fontsize{38}{38}\selectfont #3}}}
+\begin{document}
+\begin{tikzpicture}[font=\fontsize{19}{24}\selectfont]
+
+\def\W{16cm}
+
+% --- Tiêu đề card ---
+\node[fill=p2blue, text=white, anchor=north west, minimum width=\W, text width=\W-1.2cm,
+      inner xsep=0.6cm, inner ysep=0.35cm, align=left, rounded corners=6pt]
+  (head) at (0,0)
+  {{\fontsize{19.5}{24}\selectfont\bfseries PHẦN 2 --- Xếp hạng trong nhóm cùng âm}\\[1pt]
+   {\fontsize{16}{20}\selectfont (Đã biết cách đọc Quốc Ngữ)}};
+
+% --- Luồng minh hoạ: ảnh scan + âm "còn" -> 5 chữ đọc "còn" -> chữ khớp nhất ---
+\begin{scope}[node distance=0.7cm,
+    fbox/.style={rectangle, rounded corners=4pt, draw=p2blue, line width=1pt, fill=p2tint,
+      text=ink, minimum height=2.7cm, align=center, font=\fontsize{14}{17}\selectfont},
+    tile/.style={rectangle, draw=gridc, fill=white, minimum size=0.95cm, inner sep=0pt,
+      font=\nomfont\fontsize{22}{22}\selectfont}]
+  \node[fbox, inner sep=4pt, anchor=north west] (img) at ($(head.south west)+(0.6cm,-0.55cm)$)
+    {\includegraphics[height=1.45cm]{../../test_images/cofn.jpg}\hspace{4pt}%
+     \raisebox{0.55cm}{\fontsize{17}{20}\selectfont + \textbf{``còn''}}\\[-1pt]
+     {\fontsize{12}{14}\selectfont ảnh scan viết tay}};
+
+  % nhóm 5 ứng viên, đáp án viền xanh
+  \node[fbox, right=of img, text width=5.6cm] (grp) {\vphantom{X}\\[1.15cm]5 chữ đọc là ``còn''};
+  \foreach \g [count=\i] in {哙,噲,存,羣,群}
+    \node[tile] (t\i) at ($(grp.north west)+(0.2cm+\i*1.05cm-0.5cm,-0.75cm)$) {\g};
+  \node[tile, draw=p2blue, line width=1.6pt] at (t5) {群};
+
+  \node[fbox, fill=p2blue, text=white, right=of grp, text width=2.9cm, inner sep=4pt] (best)
+    {\colorbox{white}{\inchu{7FA4}{1.25cm}{群}}\\[2pt]{\fontsize{13}{15}\selectfont\bfseries chữ in khớp nhất}};
+
+  \draw[arr, draw=p2blue, line width=1.6pt] (img) -- (grp);
+  \draw[arr, draw=p2blue, line width=1.6pt] (grp) -- (best);
+\end{scope}
+
+% --- 4 gạch đầu dòng ---
+\node[anchor=north west, text width=\W-1.2cm, align=left, text=ink, inner sep=0pt]
+  (body) at ($(head.south west)+(0.6cm,-3.9cm)$) {%
+  \setlength{\parskip}{7pt}%
+  \newcommand{\li}[2]{\noindent\hangindent=0.75em{\color{p2blue}\textbullet}\hspace{0.3em}\textbf{#1:} #2\par}%
+  \li{Câu hỏi}{\emph{``Biết chữ này đọc là `còn', trong các chữ Nôm đọc là `còn', tự dạng nào khớp với ảnh nhất?''}}
+  \li{Ứng dụng thực tế}{hiệu đính bản phiên âm đã có, tra cứu chữ dị thể, hỗ trợ dạy và học chữ Nôm.}
+  \li{Không gian tìm kiếm}{thu hẹp còn trung vị $\approx$\,7 ứng viên cùng âm (từ \code{QuocNgu\_SinoNom\_Dic.xlsx}).}
+  \li{Kỹ thuật \& mã nguồn}{nâng cấp từ Canny + Histogram (bản gốc) sang Embedding Cosine\\(\code{search\_use\_QuocNgu\_mapping.py}).}
+};
+
+% --- Viền card ---
+\begin{scope}[on background layer]
+  \draw[p2blue, line width=1.4pt, rounded corners=6pt, fill=white]
+    (head.north west) rectangle ($(body.south -| head.east)+(0,-0.6cm)$);
+  \fill[p2blue] (head.south west) rectangle ($(head.south east)+(0,8pt)$);
+\end{scope}
+
+\end{tikzpicture}
+\end{document}

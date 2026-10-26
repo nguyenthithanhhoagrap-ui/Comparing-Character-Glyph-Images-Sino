@@ -1,0 +1,49 @@
+% Sơ đồ 5 — Xếp hạng lại hai tầng (rerank.py): tầng 1 bằng pixel, suy ra siêu dữ liệu của query
+% bằng bỏ phiếu láng giềng (B3), chuẩn hoá z-score trong từng danh sách (B2) rồi trộn có trọng số.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 8mm]
+
+\node[dark=22mm] (q) {Ảnh query\\(không có\\siêu dữ liệu)};
+\node[box=28mm, right=of q] (s1) {\textbf{Tầng 1}\\embedding + Faiss\\láng giềng toàn kho};
+\draw[arr] (q) -- (s1);
+
+% nhánh trên: ứng viên; nhánh dưới: suy siêu dữ liệu của query (B3)
+\node[box=28mm, right=12mm of s1, yshift=15mm] (cand) {Top-K ứng viên\\+ cosine};
+\node[box=48mm, right=12mm of s1, yshift=-17mm] (vote) {\code{infer\_query\_meta} (B3)\\bỏ phiếu top-50 láng giềng\\softmax theo cosine, T = 0,05};
+\draw[arr] (s1.east) -- ++(5mm,0) |- (cand.west);
+\draw[arr] (s1.east) -- ++(5mm,0) |- (vote.west);
+
+\node[decision, right=of vote] (margin) {biên\\$\geq 0{,}15$?};
+\draw[arr] (vote) -- (margin);
+\node[box=24mm, below=6mm of margin, fill=white, draw=gridc, font=\footnotesize] (none) {trả \code{None}\\bỏ tín hiệu đó};
+\draw[arrdash] (margin) -- node[lab, right] {không} (none);
+
+% bốn tín hiệu
+\node[box=60mm, align=left, anchor=west] (sig) at ($(margin.east |- s1.east)+(14mm,0)$) {
+  \textbf{4 tín hiệu cho mỗi ứng viên}\\[1mm]
+  thị giác: cosine\\
+  bộ thủ: trùng / không\\
+  số nét: $|\Delta|$\\
+  hình dạng: Jaccard IDS, trọng số IDF};
+\node[store=40mm, above=8mm of sig] (meta) {\code{final\_characteristics}\\\code{RADICAL} $\cdot$ \code{STROKE\_NUM}\\\code{SHAPE\_MORPH}};
+\coordinate (join) at ($(sig.west)+(-7mm,0)$);
+\draw[arr] (cand.east) -- (cand.east -| join) |- ($(sig.west)+(0,7mm)$);
+\draw[arr] (margin.east) -- node[lab, above] {có} (margin.east -| join) |- ($(sig.west)+(0,-7mm)$);
+\draw[arr] (meta) -- node[lab, right] {siêu dữ liệu ứng viên} (sig);
+
+\node[hot=36mm, right=of sig] (z) {B2: z-score\\trong từng danh sách};
+\node[box=44mm, right=of z] (mix) {Trộn có trọng số\\0,55 thị giác $\cdot$ 0,20 bộ thủ\\0,15 số nét $\cdot$ 0,10 hình dạng};
+\node[good=30mm, below=9mm of mix] (out) {Danh sách\\đã xếp hạng lại};
+\draw[arr] (sig) -- (z);
+\draw[arr] (z) -- (mix);
+\draw[arr] (mix) -- (out);
+
+% chú thích
+\node[lab, text width=34mm, below=3mm of z] {trộn thô mất \textbf{55,8} điểm \code{hit@1}:\\phải chênh 0,364 cosine mới bù\\một lần lệch bộ thủ};
+\node[lab, text width=44mm, anchor=north] at ($(vote.south)+(0,-2mm)$) {đúng bộ thủ: \textbf{11,86\%} (tầng 1 zero-shot)\\$\rightarrow$ \textbf{66,10\%} (tầng 1 fine-tune)};
+\node[box=66mm, fill=white, draw=seal, text=seal, font=\footnotesize, anchor=north east] at ($(out.south east)+(0,-6mm)$) {\textbf{B1}: không tinh chỉnh trọng số theo \code{radical@k}\\--- chỉ số đó tính từ chính các cột tín hiệu};
+
+\end{tikzpicture}
+\end{document}

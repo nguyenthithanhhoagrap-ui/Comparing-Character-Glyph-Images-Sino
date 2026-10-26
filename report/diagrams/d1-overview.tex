@@ -1,0 +1,54 @@
+% Sơ đồ 1 — Tổng quan hệ thống: Phần 1 (toàn kho) và Phần 2 (nhóm cùng âm) dùng chung
+% một backend và một cache embedding.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 8mm]
+
+% --- Ngoại tuyến: embed toàn kho một lần cho mỗi backend ---
+\node[store=24mm] (corpus) {\code{images/}\\26.044 glyph};
+\node[box=30mm, right=of corpus] (embC) {Backend\\\code{embed\_paths(paths)}};
+\node[box=22mm, right=of embC] (l2C) {Chuẩn hoá L2};
+\node[store=34mm, right=of l2C] (cache) {\code{embeddings\_}\\\code{<backend>.npz}\\(N, D) float32};
+\draw[arr] (corpus) -- (embC);
+\draw[arr] (embC) -- (l2C);
+\draw[arr] (l2C) -- (cache);
+\node[lab, below=1.5mm of embC, text width=60mm] (blab) {\code{resnet18} $\cdot$ \code{chinese-clip(-large/-huge)} $\cdot$ \code{dinov2} $\cdot$ \code{chinese-clip-ft}};
+
+% --- Phần 1 ---
+\node[dark=24mm, below=17mm of corpus] (q) {Ảnh query\\(scan / glyph)};
+\node[box=30mm, right=of q] (embQ) {Cùng backend\\1 lượt forward};
+\node[box=22mm, right=of embQ] (l2Q) {Chuẩn hoá L2};
+\node[box=34mm, right=of l2Q] (faiss) {Faiss \code{IndexFlatIP}\\tích vô hướng = cosine};
+\node[hot=24mm, right=of faiss] (top1) {Top-K toàn kho\\(bỏ chính nó)};
+\draw[arr] (q) -- (embQ);
+\draw[arr] (embQ) -- (l2Q);
+\draw[arr] (l2Q) -- (faiss);
+\draw[arr] (faiss) -- (top1);
+\draw[arr] (cache) -- node[lab, right] {26.044 vector} (faiss);
+
+% --- Phần 2 ---
+\node[dark=24mm, below=17mm of q] (word) {Từ Quốc Ngữ\\(vd.\ \emph{còn})};
+\node[store=30mm, right=of word] (dic) {\code{QuocNgu\_SinoNom}\\\code{\_Dic.xlsx}};
+\node[box=22mm, right=of dic] (cand) {Nhóm cùng âm\\$\approx$\,7 ứng viên};
+\node[box=34mm, right=of cand] (cos) {Cosine với query;\\vector ứng viên đọc\\thẳng từ cache};
+\node[hot=24mm, right=of cos] (top2) {Xếp hạng\\trong nhóm};
+\draw[arr] (word) -- (dic);
+\draw[arr] (dic) -- (cand);
+\draw[arr] (cand) -- (cos);
+\draw[arr] (cos) -- (top2);
+\draw[arr] (l2Q.south) -- ++(0,-6mm) -| (cos.north);
+
+% --- Nhóm: nhãn dọc bên trái để không đè lên đường nối ---
+\begin{scope}[on background layer]
+  \node[group, fit=(corpus)(cache)(blab)] (g0) {};
+  \node[group, fit=(q)(top1)] (g1) {};
+  \node[group, fit=(word)(top2)] (g2) {};
+\end{scope}
+\foreach \g/\t in {g0/Ngoại tuyến, g1/Phần 1, g2/Phần 2}
+  \node[font=\footnotesize\bfseries, text=inksoft, rotate=90, anchor=south] at (\g.west) {\t};
+
+\node[lab, anchor=north east] at (g1.south east) {\code{search\_all\_chars\_in\_corpus.py}};
+\node[lab, anchor=north east] at (g2.south east) {\code{search\_use\_QuocNgu\_mapping.py}};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,61 @@
+% Kiểu dùng chung cho mọi sơ đồ TikZ trong report/diagrams/.
+% Mỗi sơ đồ là một file standalone: \input{tikzstyle} rồi một tikzpicture.
+% Biên dịch bằng XeLaTeX/LuaLaTeX (fontspec), giống paper.tex — xem build.sh.
+
+\usepackage{fontspec}
+\setmainfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+  ItalicFont=*-italic, BoldItalicFont=*-bolditalic, Ligatures=TeX]
+% Cursor (font mono của paper.tex) quá mảnh ở cỡ chữ sơ đồ; DejaVu Sans Mono đi kèm mọi bản TeX Live.
+\setmonofont{DejaVuSansMono}[Extension=.ttf, BoldFont=*-Bold, Scale=0.82]
+% Toán (≈, →, τ, ≥) theo kiểu chữ không chân cho khớp thân chữ, thay vì Computer Modern.
+\usepackage{unicode-math}
+\setmathfont{texgyredejavu-math.otf}
+
+% Chữ Hán trong sơ đồ: ưu tiên đúng font paper.tex dùng (../../fonts, tải bằng download_fonts.sh),
+% nếu chưa tải thì lùi về font hệ thống. Chỉ dùng chữ trong mặt phẳng cơ bản nên font nào cũng đủ.
+\IfFileExists{../../fonts/BabelStoneHan.ttf}
+  {\newfontfamily\nomfont{BabelStoneHan.ttf}[Path=../../fonts/]}
+  {\IfFontExistsTF{SimSun}{\newfontfamily\nomfont{SimSun}}
+    {\newfontfamily\nomfont{Noto Serif CJK SC}}}
+\newcommand{\nom}[1]{{\nomfont #1}}
+\newcommand{\code}[1]{{\ttfamily #1}}
+
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds,calc,shapes.geometric,shapes.misc,decorations.pathreplacing}
+
+% Bảng màu khớp với slide (mực, son, ngọc).
+\definecolor{ink}{HTML}{1E2422}
+\definecolor{inksoft}{HTML}{3A4440}
+\definecolor{seal}{HTML}{B5332A}
+\definecolor{jade}{HTML}{2F7A68}
+\definecolor{gold}{HTML}{B07E28}
+\definecolor{wash}{HTML}{EEF1EF}
+\definecolor{mute}{HTML}{6B7570}
+\definecolor{gridc}{HTML}{C9D1CD}
+
+\tikzset{
+  every picture/.style={font=\small, line cap=round, line join=round},
+  box/.style={rectangle, rounded corners=2pt, fill=wash, draw=none, text=ink,
+    minimum height=9mm, inner sep=4pt, align=center, text width=#1},
+  box/.default=26mm,
+  hot/.style={box=#1, fill=seal, text=white, font=\small\bfseries},
+  hot/.default=26mm,
+  good/.style={box=#1, fill=jade, text=white, font=\small\bfseries},
+  good/.default=26mm,
+  dark/.style={box=#1, fill=ink, text=white},
+  dark/.default=26mm,
+  store/.style={cylinder, shape border rotate=90, aspect=0.18, draw=inksoft, fill=white,
+    text=ink, minimum height=11mm, text width=#1, align=center, inner sep=3pt},
+  store/.default=24mm,
+  decision/.style={diamond, aspect=2.2, fill=white, draw=inksoft, text=ink, align=center,
+    inner sep=1pt, font=\footnotesize},
+  arr/.style={-{Stealth[length=2.4mm,width=2mm]}, line width=0.9pt, draw=inksoft},
+  arrhot/.style={arr, draw=seal},
+  arrdash/.style={arr, dashed, draw=mute},
+  lab/.style={font=\scriptsize, text=mute, align=center},
+  num/.style={font=\footnotesize\bfseries, text=seal, align=center},
+  group/.style={draw=gridc, dashed, rounded corners=4pt, inner sep=6pt},
+  grouplabel/.style={font=\footnotesize\bfseries, text=inksoft, anchor=south west, inner sep=2pt},
+  sealnode/.style={rectangle, fill=seal, text=white, minimum size=#1, inner sep=0pt, font=\nomfont},
+  sealnode/.default=8mm,
+  stepn/.style={circle, fill=seal, text=white, font=\footnotesize\bfseries, minimum size=5mm, inner sep=0pt},
+}

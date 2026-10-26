@@ -1,0 +1,28 @@
+% Sơ đồ 6 — Dòng thời gian của đồ án: mỗi mốc là một quyết định, kèm con số đã đo dẫn tới nó.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}
+
+\def\gap{36mm}
+\draw[line width=1.2pt, gridc] (0,0) -- (6*\gap,0);
+
+% \moc{chỉ số}{1 = phía trên, 0 = phía dưới}{tiêu đề}{con số}{mô tả}{màu}
+\newcommand{\moc}[6]{
+  \node[circle, fill=#6, text=white, font=\footnotesize\bfseries, minimum size=7mm, inner sep=0pt] (m#1) at (#1*\gap-\gap,0) {#1};
+  \ifnum#2=1
+    \node[anchor=south, text width=34mm, align=center] at ($(m#1.north)+(0,3mm)$) {\textbf{#3}\\[0.5mm]{\Large\bfseries\color{#6}#4}\\[0.5mm]{\scriptsize\color{mute}#5}};
+  \else
+    \node[anchor=north, text width=34mm, align=center] at ($(m#1.south)+(0,-3mm)$) {\textbf{#3}\\[0.5mm]{\Large\bfseries\color{#6}#4}\\[0.5mm]{\scriptsize\color{mute}#5}};
+  \fi
+}
+\moc{1}{1}{ResNet18 gốc}{0,2316}{radical@k; conv1 một kênh\\khởi tạo ngẫu nhiên}{mute}
+\moc{2}{0}{Chinese-CLIP-large}{0,5361}{radical@k, gấp 2,31$\times$;\\bản huge lại kém hơn}{jade}
+\moc{3}{1}{Trần của chỉ số}{0,7338}{oracle IDS: mô hình đang ở\\73\% quãng đường}{jade}
+\moc{4}{0}{Đo trên scan thật}{0,0847}{hit@1 zero-shot: lệch\\phân phối, hiệu ứng hub}{seal}
+\moc{5}{1}{Sinh dữ liệu}{131.604}{ảnh render 7 font; degrade:\\9,4$\times$ $\rightarrow$ 2,8$\times$}{gold}
+\moc{6}{0}{Fine-tune SupCon}{0,5932}{hit@1 gấp 7$\times$; Phần 2: 0,8136\\lớp chưa thấy = đã thấy}{seal}
+\moc{7}{1}{Rerank siêu dữ liệu}{$-$14/600}{chưa giúp; nghẽn ở bước\\đoán bộ thủ (11,86\%)}{inksoft}
+
+\end{tikzpicture}
+\end{document}

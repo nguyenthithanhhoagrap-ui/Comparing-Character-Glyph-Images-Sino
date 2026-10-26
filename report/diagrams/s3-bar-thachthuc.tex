@@ -1,0 +1,70 @@
+% Slide 3, thanh dưới cùng — 3 thách thức cốt lõi. Rộng ≈ 33 cm = bề ngang hai card
+% s3-card-phan1 + s3-card-phan2 cộng khoảng hở, để đặt ngay bên dưới chúng.
+% Ô 3 dùng ảnh thật: scan test_images/cofn.jpg và chữ 群 trong kho cắt từ Hình 5 của báo cáo
+% (img/kho-7FA4-tu-hinh5.png, cắt từ report/figs/fig5-qualitative.pdf hàng "còn", fine-tune #1).
+\documentclass[tikz,border=4pt]{standalone}
+\input{tikzstyle}
+\definecolor{warn}{HTML}{DC2626}
+\definecolor{warndark}{HTML}{991B1B}
+\definecolor{warnbg}{HTML}{FEF2F2}
+\begin{document}
+\begin{tikzpicture}[font=\fontsize{16}{20}\selectfont,
+    tile/.style={rectangle, draw=gridc, fill=white, inner sep=2pt, minimum size=1.15cm,
+      font=\nomfont\fontsize{26}{26}\selectfont, text=ink},
+    capt/.style={font=\fontsize{12.5}{15}\selectfont, text=inksoft, align=center}]
+
+\def\W{33}  % cm
+\def\H{6.0} % cm
+
+% --- Nền + viền trái ---
+\fill[warnbg, rounded corners=4pt] (0,0) rectangle (\W,-\H);
+\fill[warn] (0,0) rectangle (0.25,-\H);
+
+% --- Cột tiêu đề: tam giác cảnh báo vẽ bằng TikZ (font không có ký tự ⚠) ---
+\begin{scope}[shift={(2.9,-2.1)}]
+  \fill[warn, rounded corners=2pt] (-0.75,-0.6) -- (0.75,-0.6) -- (0,0.7) -- cycle;
+  \node[text=white, font=\bfseries\fontsize{22}{22}\selectfont] at (0,-0.12) {!};
+\end{scope}
+\node[text=warn, align=center, font=\bfseries\fontsize{19}{23}\selectfont] at (2.9,-3.8)
+  {3 THÁCH THỨC\\CỐT LÕI};
+
+% --- Ba cột ---
+% \thachthuc{cột}{số}{tiêu đề}{mô tả}
+\newcommand{\thachthuc}[4]{%
+  \coordinate (c#2) at ({5.9+(#1-1)*9.0},0);
+  \node[circle, fill=warn, text=white, font=\bfseries\fontsize{15}{15}\selectfont,
+        minimum size=0.85cm, inner sep=0pt] (n#2) at ($(c#2)+(0.45,-0.85)$) {#2};
+  \node[anchor=west, text=warndark, font=\bfseries\fontsize{19}{23}\selectfont]
+        at ($(n#2.east)+(0.25,0)$) {#3};
+  \node[anchor=north west, text width=4.5cm, align=left, text=ink, inner sep=0pt]
+        (t#2) at ($(c#2)+(4.35,-1.75)$) {#4};
+}
+\thachthuc{1}{1}{Dữ liệu one-shot}{Đúng \textbf{1 ảnh / chữ} $\rightarrow$ không có cặp dương nào để học metric.}
+\thachthuc{2}{2}{Độ tương đồng cao}{Hàng vạn chữ chỉ khác nhau \textbf{một nét nhỏ} hoặc một bộ thủ.}
+\thachthuc{3}{3}{Lệch phân phối}{Scan mờ, nét nhoè dính, có chữ lối hành --- khác xa chữ in khải thư 70$\times$70.}
+
+% --- Minh hoạ ô 1: một chữ, một ảnh ---
+\node[tile, minimum size=1.6cm] (one) at ($(c1)+(1.65,-2.75)$)
+  {\includegraphics[height=1.4cm]{img/kho-7FA4-tu-hinh5.png}};
+\node[circle, fill=warn, text=white, font=\bfseries\fontsize{12}{12}\selectfont, inner sep=1.5pt]
+  at ($(one.north east)+(0.05,0.05)$) {$\times$1};
+\node[capt, below=2pt of one] {26.044 chữ\\$\times$ 1 ảnh};
+
+% --- Minh hoạ ô 2: 己 已 巳 — khác nhau đúng một nét ---
+\foreach \g [count=\i] in {己,已,巳}
+  \node[tile, minimum size=1.0cm, font=\nomfont\fontsize{24}{24}\selectfont]
+    (g\i) at ($(c2)+(0.55+\i*1.08-1.08+0.0,-2.6)$) {\g};
+\node[capt, below=4pt of g2] {khác nhau\\đúng một nét};
+
+% --- Minh hoạ ô 3: scan thật cạnh chữ trong kho ---
+\node[tile, minimum size=1.45cm] (scan) at ($(c3)+(0.95,-2.7)$)
+  {\includegraphics[height=1.3cm]{../../test_images/cofn.jpg}};
+\node[font=\bfseries\fontsize{20}{20}\selectfont, text=warn] (neq) at ($(scan.east)+(0.35,0)$) {$\neq$};
+\node[tile, minimum size=1.45cm, anchor=west] (kho) at ($(neq.east)+(0.05,0)$)
+  {\includegraphics[height=1.3cm]{img/kho-7FA4-tu-hinh5.png}};
+\node[capt, below=1pt of scan] {scan};
+\node[capt, below=1pt of kho] {trong kho};
+\node[capt, text=warndark, font=\bfseries\fontsize{12.5}{15}\selectfont] at ($(neq)+(0,-1.8)$) {độ nét chênh 6,55$\times$};
+
+\end{tikzpicture}
+\end{document}

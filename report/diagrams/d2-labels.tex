@@ -1,0 +1,36 @@
+% Sơ đồ 2 — Nhãn thật đến từ đâu: tên file Telex -> từ Quốc Ngữ -> tập chữ Nôm đúng (Phần 1),
+% và nhãn gán tay có độ tin cậy (Phần 2). Xem evaluate_test_images.py.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 9mm]
+
+\node[dark=24mm] (file) {\code{cofn.jpg}\\\code{phong\_1.jpg}};
+\node[box=40mm, right=of file] (telex) {Giải mã Telex\\sinh \emph{mọi} vị trí dấu thanh\\\code{cofn}, \code{conf} $\rightarrow$ \emph{còn}};
+\node[store=30mm, right=of telex] (dic) {\code{QuocNgu\_SinoNom}\\\code{\_Dic.xlsx}};
+\node[good=34mm, right=of dic] (gt) {Tập chữ Nôm đúng\\59/59 không mơ hồ};
+\draw[arr] (file) -- (telex);
+\draw[arr] (telex) -- (dic);
+\draw[arr] (dic) -- node[lab, above] {tra} (gt);
+
+\node[box=40mm, above=8mm of telex, fill=white, draw=gridc] (fix) {\code{FILENAME\_FIXES}\\\code{dau} $\rightarrow$ \emph{dâu}\\\code{nguwowsi} $\rightarrow$ \emph{người}};
+\draw[arrdash] (fix) -- (telex);
+\node[lab, left=3mm of fix, text width=30mm, align=right] {sửa lỗi gõ tên file,\\không đổi tên file gốc};
+
+\node[box=36mm, below=9mm of dic, fill=white, draw=seal, text=seal] (bug) {\textbf{Bug đã sửa:} \code{words.pop()}\\làm rỗng bảng tra $\rightarrow$\\ảnh thứ hai bị bỏ âm thầm};
+\draw[arrdash, draw=seal] (bug) -- (dic);
+
+% Hai nhánh đánh giá
+\node[hot=32mm, right=12mm of gt, yshift=13mm] (p1) {Phần 1: \code{hit@k}, MRR\\trên 26.044 chữ};
+\node[box=32mm, right=12mm of gt, yshift=-13mm] (lbl) {Nhãn gán tay\\\code{label\_template.csv}};
+\draw[arr] (gt.east) -- ++(4mm,0) |- (p1.west);
+\draw[arr] (gt.east) -- ++(4mm,0) |- (lbl.west);
+
+\node[hot=32mm, below=8mm of lbl] (p2) {Phần 2: đúng top-1\\trong nhóm cùng âm};
+\draw[arr] (lbl) -- (p2);
+
+\node[lab, right=3mm of lbl, text width=36mm, align=left] (rule) {so hình trước, đối chiếu\\chính tả Nôm \emph{Truyện Kiều};\\mâu thuẫn thì \textbf{ảnh thắng}};
+\node[lab, right=3mm of p2, text width=36mm, align=left] {\code{confidence}: 53 high,\\4 med, 2 low --- do \textbf{người}\\đánh giá, không do mô hình};
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,55 @@
+% Sơ đồ 4 — Fine-tune bất biến kiểu chữ (finetune_glyph.py): P×K sampler, degrade online,
+% tháp ảnh Chinese-CLIP ViT-B/16, SupCon; vòng đánh giá giữa epoch với cột cos phát hiện collapse.
+\documentclass[tikz,border=6pt]{standalone}
+\input{tikzstyle}
+\begin{document}
+\begin{tikzpicture}[node distance=7mm and 8mm]
+
+% --- Hàng 1: dữ liệu -> mô hình ---
+\node[store=30mm] (data) {141.981 ảnh\\23.440 lớp Unicode};
+\node[box=28mm, right=of data] (pk) {\code{PKSampler}\\\textbf{24 lớp $\times$ 2 view}\\= batch 48};
+\node[box=26mm, right=of pk] (deg) {\code{degrade()}\\online, $p = 0{,}6$};
+\node[dark=36mm, right=of deg] (vit) {Chinese-CLIP\\ViT-B/16 (tháp ảnh)\\bf16, grad.\ checkpoint};
+\node[box=30mm, right=of vit] (proj) {\code{visual\_projection}\\512 chiều $\rightarrow$ L2};
+\draw[arr] (data) -- (pk);
+\draw[arr] (pk) -- (deg);
+\draw[arr] (deg) -- (vit);
+\draw[arr] (vit) -- (proj);
+
+% --- Hàng 2: loss -> optimizer -> cập nhật ---
+\node[hot=30mm, below=11mm of proj] (loss) {SupCon\\$\tau = 0{,}07$};
+\node[box=32mm, below=11mm of vit] (opt) {AdamW, lr $10^{-5}$\\warmup 300, cosine};
+\draw[arr] (proj) -- (loss);
+\draw[arr] (loss) -- (opt);
+\draw[arrhot] (opt) -- node[lab, left, text=seal] {cập nhật} (vit);
+
+% --- Minh hoạ SupCon, bên phải loss ---
+\begin{scope}[shift={($(loss.east)+(8mm,-12mm)$)}]
+  \draw[gridc, rounded corners=3pt, fill=white] (0,0) rectangle (30mm,24mm);
+  \node[lab, anchor=north west] at (1mm,23.5mm) {không gian embedding};
+  \foreach \p in {(6mm,11mm),(9mm,14mm)}   \fill[seal] \p circle (1.4mm);
+  \foreach \p in {(20mm,6mm),(23mm,9mm)}   \fill[jade] \p circle (1.4mm);
+  \foreach \p in {(11mm,4mm),(25mm,16mm)}  \fill[gold] \p circle (1.4mm);
+  \draw[seal, line width=0.8pt, {Stealth[length=1.4mm]}-{Stealth[length=1.4mm]}] (7mm,12mm) -- (8mm,13mm);
+  \draw[mute, dashed, line width=0.8pt, {Stealth[length=1.4mm]}-{Stealth[length=1.4mm]}] (10.5mm,13.5mm) -- (18.5mm,8mm);
+  \node[lab, anchor=north, text width=32mm] at (15mm,-1mm) {cùng mã Unicode: kéo lại\\khác mã: đẩy ra};
+\end{scope}
+
+% --- Hàng 3: đánh giá mỗi 600 bước ---
+\node[box=34mm, below=30mm of pk] (e2) {render $\rightarrow$ kho\\lớp đã thấy / chưa thấy};
+\node[box=30mm, right=of e2] (e1) {\code{hit@1} trên\\59 scan thật};
+\node[box=36mm, right=of e1] (e3) {cột \code{cos}: cosine TB của\\2.000 vector ngẫu nhiên\\$\rightarrow 1{,}0$ nghĩa là collapse};
+\node[good=22mm, below=8mm of e1] (best) {\code{best.pt}};
+\draw[arr] (e1) -- node[lab, right] {chọn checkpoint} (best);
+\begin{scope}[on background layer]
+  \node[group, fit=(e2)(e3), inner sep=8pt] (geval) {};
+\end{scope}
+\node[grouplabel] at (geval.north west) {Đánh giá giữa epoch, mỗi \code{--eval-steps 600}};
+\draw[arrdash] (opt.south) -- node[lab, right] {trọng số hiện tại} (opt.south |- geval.north);
+
+\node[store=26mm, left=10mm of e2] (held) {2.604 lớp\\\textbf{giữ ngoài} train};
+\draw[arrdash] (held) -- (e2);
+\node[lab, text width=46mm, anchor=north west] at ($(geval.south west)+(0,-2mm)$) {\code{\_assert\_test\_images\_unseen}: không pixel\\nào của 59 scan đi vào huấn luyện};
+
+\end{tikzpicture}
+\end{document}
